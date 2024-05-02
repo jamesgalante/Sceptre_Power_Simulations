@@ -1,0 +1,22 @@
+# Main Config File Format for Sceptre Power Simulations Pipeline
+samples:
+  test_data:
+    interim: 2
+
+simulate_guide_assignments:
+  num_perts_per_gene: 10
+  num_cells_per_guide: 70
+  num_guides_per_pert: 15
+  
+fit_dispersions:
+  size_factors: "poscounts"
+  fit_type: "parametric"
+  disp_type: "dispersion"
+  
+split_target_response_pairs:
+  batches: 3 # should be <= num_perts_per_gene
+  
+sceptre_power_analysis:
+  effect_size: 0.25 
+  reps: 20
+  guide_sd: 0.13
