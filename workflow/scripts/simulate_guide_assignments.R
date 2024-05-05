@@ -35,15 +35,14 @@ response_matrix <- readRDS(snakemake@input$raw_counts)
 
 # Load in snakemake parameters
 message("Loading parameters")
-num_perts_per_gene <- snakemake@params$num_perts_per_gene 
-num_cells_per_guide <- snakemake@params$num_cells_per_guide
+num_cells_per_pert <- snakemake@params$num_cells_per_pert
 num_guides_per_pert <- snakemake@params$num_guides_per_pert
 
 ### SIMULATE GUIDE COUNTS ====================================================
 
 message("Creating the sce object")
 # Estimate how many cells we need in our sce object
-num_cells <- num_cells_per_guide * num_guides_per_pert * 5 + 6000 # The 6000 is to make sure there are enough n_ctrl cells
+num_cells <- num_cells_per_pert[length(num_cells_per_pert)] * 5 + 6000 # The 6000 is to make sure there are enough n_ctrl cells
 
 # Create the raw matrix with the new number of cells
 counts <- matrix(0, nrow=nrow(response_matrix), ncol=num_cells)
@@ -56,8 +55,7 @@ sce <- SingleCellExperiment(assays=list(counts=counts))
 # Simulate perturbations
 message("Simulating perturbations")
 sce <- simulate_perturbations(sce, 
-                              cells_per_guide=num_cells_per_guide, 
-                              perts=num_perts_per_gene, 
+                              cells_per_pert=num_cells_per_pert, 
                               guides_per_pert=num_guides_per_pert)
 
 

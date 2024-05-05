@@ -6,15 +6,13 @@ library(SingleCellExperiment)
 
 # function to simulate enhancer perturbations for randomly picked cells and add as perturbation
 # status matrix to the SCE object
-simulate_perturbations <- function(sce, cells_per_guide, perts, guides_per_pert) {
+simulate_perturbations <- function(sce, cells_per_pert, guides_per_pert) {
   
   # create randomly selected perturbations
   cells <- colnames(sce)
-  pert_status <- replicate(
-    n = perts,
-    expr = simulate_one_pert(cells, guides = guides_per_pert, cells_per_guide = cells_per_guide),
-    simplify = FALSE
-  )
+  pert_status <- lapply(cells_per_pert, function(n_cells) {
+    simulate_one_pert(cells, guides = guides_per_pert, cells_per_pert = n_cells)
+  })
   
   # split output into cre_perts and grna_perts
   cre_perts <- lapply(pert_status, FUN = "[[", 1)
@@ -25,7 +23,7 @@ simulate_perturbations <- function(sce, cells_per_guide, perts, guides_per_pert)
   grna_perts <- do.call(rbind, grna_perts)
   
   # set rownames with enhancer and grna ids
-  enh_ids <- paste0("enh", seq_len(perts))
+  enh_ids <- paste0("enh", seq(length(num_cells_per_pert)))
   grna_ids <- paste0(rep(enh_ids, each = guides_per_pert), paste0("_g", seq_len(guides_per_pert)))
   rownames(cre_perts) <- enh_ids
   rownames(grna_perts) <- grna_ids
@@ -39,10 +37,10 @@ simulate_perturbations <- function(sce, cells_per_guide, perts, guides_per_pert)
 }
 
 # randomly draw perturbed cells and return a CRE and gRNA perturbation status matrix
-simulate_one_pert <- function(cells, guides, cells_per_guide) {
+simulate_one_pert <- function(cells, guides, cells_per_pert) {
   
   # draw number of cells per guide from a poisson with lambda = cells_per_guide
-  n_cells <- rpois(guides, lambda = cells_per_guide)
+  n_cells <- rpois(guides, lambda = round(cells_per_pert / guides))
   
   # randomly draw cells perturbed by these guides
   pert_cells <- sample(seq_along(cells), size = sum(n_cells))

@@ -1,7 +1,7 @@
 
 # These rules are used to simulate the guide assignments given parameters in the config file
 # Along with the simulation, dispersion estimates are calculated on the real data
-
+    
 # Create the simulated guide and cre assignments
 rule simulate_guide_assignments:
   input:
@@ -9,8 +9,7 @@ rule simulate_guide_assignments:
   output:
     simulated_sce = "results/{sample}/simulated_sce.rds"
   params:
-    num_perts_per_gene = config["simulate_guide_assignments"]["num_perts_per_gene"],
-    num_cells_per_guide = config["simulate_guide_assignments"]["num_cells_per_guide"],
+    num_cells_per_pert = config["simulate_guide_assignments"]["num_cells_per_pert"],
     num_guides_per_pert = config["simulate_guide_assignments"]["num_guides_per_pert"]
   log: 
     "results/{sample}/logs/simulate_guide_assignment.log"
