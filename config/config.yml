@@ -4,7 +4,7 @@ samples:
     interim: 2
 
 simulate_guide_assignments:
-  num_cells_per_pert: [100, 250, 500, 750, 1000, 1500, 1750, 2000, 2500, 4000, 7500, 10000]
+  num_cells_per_pert: [50, 75, 100, 150, 250, 500, 750, 1000, 1400, 1800, 2500, 4000, 7500, 10000]
   num_guides_per_pert: 15
   
 fit_dispersions:
