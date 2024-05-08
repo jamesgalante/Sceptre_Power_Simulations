@@ -1,0 +1,294 @@
+---
+title: "Power analysis"
+author: "James Galante"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+### Save Image for Debugging
+```{r}
+# Saving image for debugging
+save.image("RDA_objects/visualize_power_results.rda")
+message("Saved Image")
+# stop("Manually Stopped Program after Saving Image")
+```
+
+### Goal
+Exploration of power simulation results from the `r snakemake@wildcards$sample` dataset.
+
+```{r requiredPackages, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(cowplot)
+```
+
+***
+
+### Power across effect sizes
+The statistical power to detect different effect sizes was computed by simulating UMI count data
+and injecting the specified effect sizes (% decrease in expression). Here, the statistical power 
+and the number of E-G pairs is at 80% power plotted for effect sizes.
+
+```{r, message = FALSE}
+# load results
+results <- read_tsv(snakemake@input[[1]], progress = FALSE)
+```
+
+```{r, fig.height=4, fig.width=8}
+
+# add power rank and percent of pairs
+power <- results %>% 
+  mutate(power_rank = seq_len(n()),
+         power_pct = power_rank / n())
+
+# plot power distribution
+p1 <- ggplot(power, aes(x = power_pct, y = power, color = "darkblue")) +
+  geom_hline(yintercept = 0.8, lty = "dashed") +
+  geom_line(lwd = 1, color = "darkblue") +
+  labs(title = "Power across tested pairs", y = "Power", x = "Tested perturbation-gene pairs",
+       color = "Effect size") +
+  scale_x_continuous(labels = scales::percent) +
+  theme_bw() +
+  theme(text = element_text(size = 13))
+
+# filter for pairs with >= 0.8 power
+power_80 <- filter(power, power >= 0.8)
+# Calculate the percentage of pairs with at least 80% power
+percent_80_power <- nrow(power_80) / nrow(power) * 100
+
+# plot number of pairs at 80% power
+p2 <- ggplot(power_80, aes(x = effect_size, fill = "darkblue")) +
+  geom_bar(fill = "darkblue") +
+  scale_y_continuous(limits = c(0, nrow(results))) +
+  labs(x = "Effect size", y = "Tested perturbation-gene pairs",
+       title = "80% Power",
+       subtitle = sprintf("%s%% of Pairs", format(percent_80_power, digits = 2))) +
+  theme_bw() +
+  theme(legend.position = "none", text = element_text(size = 13))
+
+# print plots as one figure
+plot_grid(p2, p1, ncol = 2, rel_widths = c(0.33, 0.66))
+```
+
+***
+
+### Power vs. gene expression and number of perturbed cells
+Power is plotted as a function of gene expression levels and number of perturbed cells per
+perturbation. For this, genes are binned into decentiles based on their average expression
+(UMI/cell). For each bin, the average UMI/cell per gene is then calculated and used as the
+expression level for genes in this bin. Similarly, the perturbations are grouped into quartiles
+based on the number of cells per perturbation. The average statistical power per expression bin is
+then plotted as a function of detected UMIs for each cells per perturbation quartile.
+
+```{r}
+# Define breakpoints and compute midpoints
+breakpoints <- snakemake@params$num_cells_per_pert
+midpoints <- c(0, (head(breakpoints, -1) + tail(breakpoints, -1)) / 2, Inf)
+
+# Adjusting bins and adding a small jitter
+set.seed(123)
+power <- power %>%
+  mutate(cells_quant = cut(mean_pert_cells,
+                           breaks = midpoints,
+                           labels = breakpoints,
+                           include.lowest = TRUE, right = FALSE),
+         avg_expr_jittered = average_expression_all_cells + runif(n = n(), min = -1e-6, max = 1e-6),
+         expr_quant = cut(avg_expr_jittered, 
+                          breaks = quantile(avg_expr_jittered, probs = seq(0, 1, 0.1), na.rm = TRUE),
+                          include.lowest = TRUE))
+
+# Aggregate data
+avg_expr_quants <- power %>% 
+  group_by(expr_quant) %>% 
+  summarize(mean_expr = mean(average_expression_all_cells))
+
+binned_power <- power %>%
+  group_by(effect_size, cells_quant, expr_quant) %>% 
+  summarize(mean_power = mean(power), .groups = "drop") %>%
+  left_join(avg_expr_quants, by = "expr_quant")
+
+# Plotting without line types and moving legend to the right
+p <- ggplot(binned_power, aes(x = mean_expr, y = mean_power, color = cells_quant)) +
+  geom_hline(yintercept = 0.8, lty = "dashed") +
+  geom_line() +
+  geom_point() +
+  labs(title = "Power vs. gene expression", x = "Average UMI/cell per gene",
+       y = "Power", color = "Combination") +
+  scale_x_log10() +
+  theme_bw() +
+  theme(text = element_text(size = 13),
+        legend.position = "right") +
+  guides(color = guide_legend(title = "Number of\nperturbed cells"))
+
+# If plotting in an R environment
+print(p)
+```
+
+
+### Minimum number of UMIs for 80% power per number of pert cells
+
+```{r, fig.height=4, fig.width=8}
+# For the least number of UMIs for 80% power at each number of pert cells:
+umi_80 <- power %>%
+  filter(power >= 0.8) %>%
+  group_by(cells_quant) %>%
+  summarize(min_umi = min(average_expression_all_cells)) %>%
+  ungroup()
+
+# Plotting
+p_umi_mean <- ggplot(umi_80, aes(x = cells_quant, y = min_umi, fill = cells_quant)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Minimum UMIs for 80% Power", 
+       x = "Number of Perturbed Cells (Not to Scale)", 
+       y = "Minimum UMIs",
+       subtitle = "Num Pert Cells = Mean of Sampling Distribution") +
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank()) 
+
+# For the least number of UMIs for 80% power at each number of pert cells:
+umi_80 <- power %>%
+  filter(power >= 0.8) %>%
+  group_by(mean_pert_cells) %>%
+  summarize(min_umi = min(average_expression_all_cells)) %>%
+  ungroup()
+
+# Plotting
+p_umi_sim <- ggplot(umi_80, aes(x = mean_pert_cells, y = min_umi)) +
+  geom_line() +
+  geom_point(color = "darkblue") +
+  labs(title = "Minimum UMIs for 80% Power", 
+       x = "Number of Perturbed Cells (To Scale)", 
+       y = "Minimum UMIs",
+       subtitle = "Num Pert Cells = Sampled Num from Poisson") +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank())
+
+plot_grid(p_umi_mean, p_umi_sim, ncol = 2, rel_widths = c(0.5, 0.5))
+```
+
+
+### Percent of Pairs that Pass 80% at each Number of Perturbed Cells
+
+```{r, fig.height=4, fig.width=8}
+# Assuming 'power' is your data frame
+pct_pairs_bin <- power %>%
+  group_by(cells_quant) %>%
+  summarise(percent_pass_80 = sum(power >= 0.8) / n()) %>%
+  mutate(percent_pass_80 = percent_pass_80 * 100)
+
+# Plotting
+p_bin <- ggplot(pct_pairs_bin, aes(x = cells_quant, y = percent_pass_80, fill = cells_quant)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Percent of Pairs with 80% Power", 
+       x = "Number of Perturbed Cells (Not to Scale)", 
+       y = "Percent of Pairs",
+       subtitle = "Num Pert Cells = Mean of Sampling Distribution") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        legend.position = "none") 
+            
+
+# Assuming 'power' is your data frame
+pct_pairs_sim <- power %>%
+  group_by(mean_pert_cells) %>%
+  summarise(percent_pass_80 = sum(power >= 0.8) / n()) %>%
+  mutate(percent_pass_80 = percent_pass_80 * 100)
+
+# Plotting
+p_sim <- ggplot(pct_pairs_sim, aes(x = mean_pert_cells, y = percent_pass_80)) +
+  geom_line() +
+  geom_point(color = "darkblue") +
+  labs(title = "Percent of Pairs with 80% Power", 
+       x = "Number of Perturbed Cells (To Scale)", 
+       y = "Percent of Pairs",
+       subtitle = "Num Pert Cells = Sampled Num from Poisson") +
+  theme_bw()
+
+plot_grid(p_bin, p_sim, ncol = 2, rel_widths = c(0.5, 0.5))
+```
+
+### Percent of Pairs that have 0 Power at each Number of Perturbed Cells
+
+```{r, fig.height=4, fig.width=8}
+# Assuming 'power' is your data frame
+pct_pairs_bin <- power %>%
+  group_by(cells_quant) %>%
+  summarise(percent_0_power = sum(power == 0) / n()) %>%
+  mutate(percent_0_power = percent_0_power * 100)
+
+# Plotting
+p_bin <- ggplot(pct_pairs_bin, aes(x = cells_quant, y = percent_0_power, fill = cells_quant)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Percent of Pairs with 0% Power", 
+       x = "Number of Perturbed Cells (Not to Scale)", 
+       y = "Percent of Pairs",
+       subtitle = "Num Pert Cells = Mean of Sampling Distribution") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        legend.position = "none") 
+ 
+pct_pairs_sim <- power %>%
+  group_by(mean_pert_cells) %>%
+  summarise(percent_0_power = sum(power == 0) / n()) %>%
+  mutate(percent_0_power = percent_0_power * 100)
+           
+# Plotting
+p_sim <- ggplot(pct_pairs_sim, aes(x = mean_pert_cells, y = percent_0_power)) +
+  geom_line() +
+  geom_point(color = "darkblue") +
+  labs(title = "Percent of Pairs with 0% Power", 
+       x = "Number of Perturbed Cells (To Scale)", 
+       y = "Percent of Pairs",
+       subtitle = "Num Pert Cells = Sampled Num from Poisson") +
+  theme_bw()
+
+plot_grid(p_bin, p_sim, ncol = 2, rel_widths = c(0.5, 0.5))
+```
+
+
+### Minimum number of cells to get 80% power by Mean UMIs
+
+```{r}
+# For the least number of perturbed cells for 80% power at each number of average expression:
+umi_80 <- power %>%
+  filter(power >= 0.8) %>%
+  group_by(average_expression_all_cells) %>%
+  summarize(min_pert_cells = min(mean_pert_cells)) %>%
+  ungroup()
+
+# Plotting
+p_umi <- ggplot(umi_80, aes(x = average_expression_all_cells, y = min_pert_cells)) +
+  geom_point(color = "darkblue") +
+  geom_smooth(method = "nls", formula = y ~ a * exp(b * x), 
+            method.args = list(start = list(a = max(umi_80$min_pert_cells), b = 0.1)), 
+            color = "black", se = FALSE) +
+  labs(title = "Minimum Perturbed Cells for 80% Power", 
+       x = "Average Expression of Gene (UMIs)", 
+       y = "Minimum Perturbed Cells",
+       subtitle = "The Average Expression of a Gene is Calculated as the Mean UMIs from the Original Data") +
+  theme_bw() +
+  scale_x_log10() +
+  theme(panel.grid.minor = element_blank())
+
+print(p_umi)
+```
+
+
+
+
+
+
+
+

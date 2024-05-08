@@ -7,4 +7,5 @@ include: "rules/run_power_analysis.smk"
 # perform all differential expression and power analyses to create main output files
 rule all:
   input:
-    expand("results/{sample}/power_analysis_output.tsv", sample=config['samples'])
+    expand("results/{sample}/power_analysis_plots.html", sample=config['samples'])
+

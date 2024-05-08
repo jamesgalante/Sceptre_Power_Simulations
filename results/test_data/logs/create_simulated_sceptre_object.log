@@ -1,0 +1,25 @@
+Installing Sceptre
+Skipping install of 'sceptre' from a github remote, the SHA1 (8abf87aa) has not changed since last install.
+  Use `force = TRUE` to force installation
+Sceptre Installation Complete
+Loading packages
+There were 13 warnings (use warnings() to see them)
+Rows: 210 Columns: 2
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: "\t"
+chr (2): grna_id, grna_target
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+Rows: 7364 Columns: 2
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: "\t"
+chr (2): grna_target, response_id
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+Creating input for perturbation 'enh1'.
+Simulating Counts
+Simulating tapseq counts
+Saving output to file.
+Closing log file connection

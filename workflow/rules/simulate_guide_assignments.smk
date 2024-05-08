@@ -11,7 +11,7 @@ rule simulate_guide_assignments:
   params:
     num_cells_per_pert = config["simulate_guide_assignments"]["num_cells_per_pert"],
     num_guides_per_pert = config["simulate_guide_assignments"]["num_guides_per_pert"]
-  log: 
+  log:
     "results/{sample}/logs/simulate_guide_assignment.log"
   conda:
     "../envs/sceptre_power_simulations.yml"
@@ -32,7 +32,7 @@ rule fit_dispersions:
     size_factors = config["fit_dispersions"]["size_factors"],
     fit_type = config["fit_dispersions"]["fit_type"],
     disp_type = config["fit_dispersions"]["disp_type"]
-  log: 
+  log:
     "results/{sample}/logs/fit_dispersions.log"
   conda:
     "../envs/analyze_crispr_screen.yml"

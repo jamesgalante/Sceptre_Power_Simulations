@@ -27,7 +27,8 @@ rule create_simulated_sceptre_object:
   input:
     simulated_sce_disp = "results/{sample}/simulated_sce_disp.rds",
     grna_target_data_frame = "resources/{sample}/grna_target_data_frame.txt",
-    discovery_pairs = "resources/{sample}/discovery_pairs.txt"
+    discovery_pairs = "resources/{sample}/discovery_pairs.txt",
+    raw_counts = "resources/{sample}/raw_counts.rds"
   output:
     simulated_sceptre_object = "resources/{sample}/simulated_sceptre_object.rds"
   log: "results/{sample}/logs/create_simulated_sceptre_object.log"
@@ -79,3 +80,38 @@ rule combine_sceptre_power_analysis:
    time = "2:00:00"
  script:
    "../scripts/combine_sceptre_power_analysis.R"
+   
+   
+# Compute the power from the power simulations
+rule compute_power_from_simulations:
+  input:
+    power_analysis_output = "results/{sample}/power_analysis_output.tsv"
+  output:
+    power_analysis_results = "results/{sample}/power_analysis_results.tsv"
+  params:
+    pval_adj_thresh = config["compute_power_from_simulations"]["pval_adj_thresh"],
+    effect_size = config["sceptre_power_analysis"]["effect_size"]
+  log: "results/{sample}/logs/compute_power_from_simulations.log"
+  conda:
+    "../envs/sceptre_power_simulations.yml"
+  resources:
+    mem = "24G",
+    time = "1:00:00"
+  script:
+    "../scripts/compute_power_from_simulations.R"
+    
+   
+# Rule to take the power analysis results and visualize the outputs
+rule visualize_power_results:
+  input:
+    "results/{sample}/power_analysis_results.tsv"
+  output:
+    "results/{sample}/power_analysis_plots.html"
+  params:
+    num_cells_per_pert = config["simulate_guide_assignments"]["num_cells_per_pert"]
+  conda: "../envs/analyze_crispr_screen.yml"
+  script:
+    "../scripts/visualize_power_results.Rmd"
+   
+   
+   

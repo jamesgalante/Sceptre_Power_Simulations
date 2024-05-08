@@ -1,0 +1,16 @@
+Loading packages
+There were 13 warnings (use warnings() to see them)
+Installing Sceptre
+Loading required package: usethis
+Warning messages:
+1: package ‘devtools’ was built under R version 4.1.3 
+2: package ‘usethis’ was built under R version 4.1.3 
+Skipping install of 'sceptre' from a github remote, the SHA1 (8abf87aa) has not changed since last install.
+  Use `force = TRUE` to force installation
+Sceptre Installation Complete
+Loading input and response matrix
+Loading parameters
+Creating the sce object
+Simulating perturbations
+Saving output to file.
+Closing log file connection

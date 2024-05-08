@@ -36,6 +36,7 @@ suppressPackageStartupMessages({
 simulated_sce_disp <- readRDS(snakemake@input$simulated_sce_disp)
 grna_target_data_frame <- read_tsv(snakemake@input$grna_target_data_frame)
 discovery_pairs <- read_tsv(snakemake@input$discovery_pairs)
+raw_counts <- readRDS(snakemake@input$raw_counts)
 
 
 ### SIMULATE COUNTS ========================================================
@@ -50,7 +51,7 @@ result_matrix <- simulate_sample_perturbation_response(
 )
 
 
-### CREATE SCEPTRE OBJECT ===================================================
+### CREATE SCEPTRE OBJECT ==================================================
 
 # Initialize object
 sceptre_object <- import_data(
@@ -60,6 +61,20 @@ sceptre_object <- import_data(
   moi = "high"
 )
 
+
+### RESAMPLE THE COVARIATES ================================================
+
+# Calculate the number of response and the number of umis for each cell
+response_n_nonzero <- colSums(raw_counts > 0)
+response_n_umis <- colSums(raw_counts)
+
+# Sample the covariates with replacement from the true covariates
+# Covariate data frame
+sceptre_object@covariate_data_frame$response_n_nonzero <- sample(response_n_nonzero, size = ncol(result_matrix), replace = TRUE)
+sceptre_object@covariate_data_frame$response_n_umis <- sample(response_n_umis, size = ncol(result_matrix), replace = TRUE)
+
+### CORRECT ERROR IN COVARIATES ============================================
+
 # Because we have ~1 gRNA per column, we have to add 1 to grna_n_nonzero and grna_n_umis (because the log is taken)
 sceptre_object@covariate_data_frame$grna_n_nonzero <- sceptre_object@covariate_data_frame$grna_n_nonzero + 1
 sceptre_object@covariate_data_frame$grna_n_umis <- sceptre_object@covariate_data_frame$grna_n_umis + 1
@@ -67,6 +82,9 @@ sceptre_object@covariate_data_frame$grna_n_umis <- sceptre_object@covariate_data
 # We have to set the formulat to not include grna_n_nonzero
 # grna_n_nonzero and grna_n_umis are not linearly independent, so they can't both be used as covariates
 formula <- formula(~ log(response_n_nonzero) + log(response_n_umis) + log(grna_n_umis))
+
+
+### OTHER SCEPTRE PARAMETERS ===============================================
 
 # Set the analysis parameters
 sceptre_object <- set_analysis_parameters(

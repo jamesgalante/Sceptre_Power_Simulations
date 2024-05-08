@@ -4,7 +4,7 @@ samples:
     interim: 2
 
 simulate_guide_assignments:
-  num_cells_per_pert: [100, 200, 500, 1000, 2000]
+  num_cells_per_pert: [100, 250, 500, 750, 1000, 1500, 1750, 2000, 2500, 4000, 7500, 10000]
   num_guides_per_pert: 15
   
 fit_dispersions:
@@ -13,9 +13,12 @@ fit_dispersions:
   disp_type: "dispersion"
   
 split_target_response_pairs:
-  batches: 5 # should be <= len(num_cells_per_pert)
+  batches: 12 # should be <= len(num_cells_per_pert)
   
 sceptre_power_analysis:
-  effect_size: 0.25 
+  effect_size: 0.15
   reps: 20
   guide_sd: 0.13
+
+compute_power_from_simulations:
+  pval_adj_thresh: 0.1

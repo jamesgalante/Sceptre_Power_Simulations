@@ -1,0 +1,7 @@
+There were 16 warnings (use warnings() to see them)
+Loading input data.
+Estimate dispersion using DESeq2:
+converting counts to integer mode
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates

@@ -4,7 +4,7 @@
 
 # Saving image for debugging
 # save.image("RDA_objects/sceptre_power_analysis.rda")
-message("Saved Image")
+# message("Saved Image")
 # stop("Manually Stopped Program after Saving Image")
 
 # Opening log file to collect all messages, warnings and errors
@@ -92,21 +92,11 @@ for (pert in perts) {
 
     # Save a temp sceptre object
     sceptre_object_use <- simulated_sceptre_object
-
-    # Assign the simulated response matrix and the split discovery pairs to the sceptre object
-    sceptre_object_use@response_matrix <- list(simulated_response_matrix)
-    sceptre_object_use@discovery_pairs <- discovery_pairs_split
-
     
-    # Recompute the covariate matrix with the new response_matrix
-    sim_response_matrix <- as.matrix(get_response_matrix(sceptre_object_use))
-    # Covariate data frame
-    sceptre_object_use@covariate_data_frame$response_n_nonzero <- colSums(sim_response_matrix > 0)
-    sceptre_object_use@covariate_data_frame$response_n_umis <- colSums(sim_response_matrix)
-    # Covariate matrix
-    sceptre_object_use@covariate_matrix[ ,"log(response_n_nonzero)"] <- log(sceptre_object_use@covariate_data_frame$response_n_nonzero)
-    sceptre_object_use@covariate_matrix[ ,"log(response_n_umis)"] <- log(sceptre_object_use@covariate_data_frame$response_n_umis)
-
+    # Assign the simulated response matrix to the sceptre object
+    sceptre_object_use@response_matrix <- list(simulated_response_matrix)
+    # Subset and assign the discovery pairs relevant to the current perturbation to the sceptre object
+    sceptre_object_use@discovery_pairs <- discovery_pairs_split[discovery_pairs_split$grna_group == pert,]
     
     # Run the discovery analysis
     message("Running discovery analysis")
@@ -122,8 +112,12 @@ for (pert in perts) {
       analysis = "run_discovery_analysis"
     )
 
-    # Save the results
+    # Add the number of perturbed cells and the rep to each pair
+    n_pert_cells <- length(sceptre_object_use@grna_assignments$grna_group_idxs[[pert]])
+    discovery_result$num_pert_cells <- n_pert_cells
     discovery_result$rep <- rep
+    
+    # Save the results
     discovery_results <- data.frame(rbind(discovery_results, discovery_result))
 
   }

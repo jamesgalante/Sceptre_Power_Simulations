@@ -1,0 +1,9 @@
+Loading packages
+There were 12 warnings (use warnings() to see them)
+Loading inputs
+Creating Discovery Pairs file
+Creating grna_target_data_frame
+Precomputations for splitting discovery_pairs
+Distributing discovery_pairs
+Saving splits to files
+Closing log file connection
