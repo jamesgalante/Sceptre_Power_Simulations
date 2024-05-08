@@ -13,7 +13,7 @@ fit_dispersions:
   disp_type: "dispersion"
   
 split_target_response_pairs:
-  batches: 12 # should be <= len(num_cells_per_pert)
+  batches: 14 # should be <= len(num_cells_per_pert)
   
 sceptre_power_analysis:
   effect_size: 0.15
