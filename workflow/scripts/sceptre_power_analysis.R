@@ -127,23 +127,18 @@ for (pert in perts) {
 ### RUN POST COMPUTATIONS ===================================================
 
 message("Processing output.")
-disp_outlier <- data.frame(response_id = rownames(simulated_sce_disp),
-                           disp_outlier_deseq2 = rowData(simulated_sce_disp)[, "disp_outlier_deseq2"],
-                           stringsAsFactors = FALSE)
 
-dispersions <- data.frame(response_id = rownames(simulated_sce_disp),
-                         dispersion = rowData(simulated_sce_disp)[, "dispersion"],
-                         stringsAsFactors = FALSE)
+# Construct a combined data frame
+combined_data <- data.frame(
+  response_id = rownames(simulated_sce_disp),
+  disp_outlier_deseq2 = rowData(simulated_sce_disp)[, "disp_outlier_deseq2"],
+  dispersion = rowData(simulated_sce_disp)[, "dispersion"],
+  average_expression_all_cells = rowMeans(response_matrix),
+  stringsAsFactors = FALSE
+)
 
-# With the original counts calculate the average expression of each gene
-av_expr <- data.frame(average_expression_all_cells = rowMeans(response_matrix),
-                      response_id = rownames(simulated_sce_disp))
-
-
-# Add to output
-discovery_results <- left_join(discovery_results, disp_outlier, by = "response_id")
-discovery_results <- left_join(discovery_results, dispersions, by = "response_id")
-discovery_results <- left_join(discovery_results, av_expr, by = "response_id")
+# Merge the combined data with discovery_results
+discovery_results <- left_join(discovery_results, combined_data, by = "response_id")
 
 
 ### SAVE OUTPUT =============================================================
