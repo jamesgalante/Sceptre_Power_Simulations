@@ -108,7 +108,9 @@ rule visualize_power_results:
   output:
     "results/{sample}/power_analysis_plots.html"
   params:
-    num_cells_per_pert = config["simulate_guide_assignments"]["num_cells_per_pert"]
+    num_cells_per_pert = config["simulate_guide_assignments"]["num_cells_per_pert"],
+    tpm_per_gene = config["visualize_power_results"]["tpm_per_gene"],
+    gene_format = config["visualize_power_results"]["gene_format"]
   conda: "../envs/analyze_crispr_screen.yml"
   script:
     "../scripts/visualize_power_results.Rmd"

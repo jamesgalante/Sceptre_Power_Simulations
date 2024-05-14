@@ -78,10 +78,41 @@ plot_grid(p2, p1, ncol = 2, rel_widths = c(0.33, 0.66))
 ### Power vs. gene expression and number of perturbed cells
 Power is plotted as a function of gene expression levels and number of perturbed cells per
 perturbation. For this, genes are binned into decentiles based on their average expression
-(UMI/cell). For each bin, the average UMI/cell per gene is then calculated and used as the
+(UMI or TPM/cell). For each bin, the average UMI or TPM/cell per gene is then calculated and used as the
 expression level for genes in this bin. Similarly, the perturbations are grouped into quartiles
 based on the number of cells per perturbation. The average statistical power per expression bin is
 then plotted as a function of detected UMIs for each cells per perturbation quartile.
+
+```{r}
+# Load in files and params
+tpm_per_gene_path <- snakemake@params$tpm_per_gene
+gene_format <- snakemake@params$gene_format
+expression_quantifier <- "UMI"
+
+# Check if tpm_per_gene file is not null before proceeding
+if (!is.null(tpm_per_gene_path)) {
+  
+  # Load the tpm_per_gene data
+  tpm_per_gene <- read_tsv(tpm_per_gene_path)
+  
+  # Ensure gene_format is either "symbol" or "ensembl"
+  if (!(gene_format %in% c("symbol", "ensembl"))) {
+    stop("gene_format must be either 'symbol' or 'ensembl'.")
+  }
+  
+  # Merge the TPM values into the power table based on the gene_format column and response_id column
+  power <- power %>%
+    left_join(tpm_per_gene %>% select(all_of(gene_format), TPM), by = c("response_id" = gene_format))
+  
+  # Replace the average_expression_all_cells column with the TPM values
+  power <- power %>%
+    mutate(average_expression_all_cells = TPM) %>%
+    select(-TPM)
+  
+  # Let's set the expression quantifier to TPM if necessary
+  expression_quantifier <- "TPM"
+}
+```
 
 ```{r}
 # Define breakpoints and compute midpoints
@@ -115,8 +146,10 @@ p <- ggplot(binned_power, aes(x = mean_expr, y = mean_power, color = cells_quant
   geom_hline(yintercept = 0.8, lty = "dashed") +
   geom_line() +
   geom_point() +
-  labs(title = "Power vs. gene expression", x = "Average UMI/cell per gene",
-       y = "Power", color = "Combination") +
+  labs(title = "Power vs. gene expression", 
+       x = paste0("Average ",expression_quantifier, "/cell per gene"),
+       y = "Power", 
+       color = "Combination") +
   scale_x_log10() +
   theme_bw() +
   theme(text = element_text(size = 13),
@@ -141,9 +174,9 @@ umi_80 <- power %>%
 # Plotting
 p_umi_mean <- ggplot(umi_80, aes(x = cells_quant, y = min_umi, fill = cells_quant)) +
   geom_bar(stat = "identity") +
-  labs(title = "Minimum UMIs for 80% Power", 
+  labs(title = paste0("Minimum ", expression_quantifier, " for 80% Power"), 
        x = "Number of Perturbed Cells (Not to Scale)", 
-       y = "Minimum UMIs",
+       y = paste0("Minimum ", expression_quantifier),
        subtitle = "Num Pert Cells = Mean of Sampling Distribution") +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
@@ -162,9 +195,9 @@ umi_80 <- power %>%
 p_umi_sim <- ggplot(umi_80, aes(x = mean_pert_cells, y = min_umi)) +
   geom_line() +
   geom_point(color = "darkblue") +
-  labs(title = "Minimum UMIs for 80% Power", 
+  labs(title = paste0("Minimum ", expression_quantifier, " for 80% Power"), 
        x = "Number of Perturbed Cells (To Scale)", 
-       y = "Minimum UMIs",
+       y = paste0("Minimum ", expression_quantifier),
        subtitle = "Num Pert Cells = Sampled Num from Poisson") +
   theme_bw() +
   theme(panel.grid.minor = element_blank())
@@ -275,9 +308,8 @@ p_umi <- ggplot(umi_80, aes(x = average_expression_all_cells, y = min_pert_cells
             method.args = list(start = list(a = max(umi_80$min_pert_cells), b = 0.1)), 
             color = "black", se = FALSE) +
   labs(title = "Minimum Perturbed Cells for 80% Power", 
-       x = "Average Expression of Gene (UMIs)", 
-       y = "Minimum Perturbed Cells",
-       subtitle = "The Average Expression of a Gene is Calculated as the Mean UMIs from the Original Data") +
+       x = paste0("Gene Expression (", expression_quantifier, ")"), 
+       y = "Minimum Perturbed Cells") +
   theme_bw() +
   scale_x_log10() +
   theme(panel.grid.minor = element_blank())

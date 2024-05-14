@@ -1,7 +1,7 @@
 # Main Config File Format for Sceptre Power Simulations Pipeline
 samples:
   test_data:
-    interim: 2
+    interim: 1
 
 simulate_guide_assignments:
   num_cells_per_pert: [50, 75, 100, 150, 250, 500, 750, 1000, 1400, 1800, 2500, 4000, 7500, 10000]
@@ -22,3 +22,9 @@ sceptre_power_analysis:
 
 compute_power_from_simulations:
   pval_adj_thresh: 0.1
+  
+# Let `tpm_per_gene: NULL`, if you want UMIs instead of TPM
+# gene_format must be "ensembl" or "symbol"
+visualize_power_results:
+  tpm_per_gene: "resources/tpm_per_gene.tsv" 
+  gene_format: "ensembl"
