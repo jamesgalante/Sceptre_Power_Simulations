@@ -3,6 +3,9 @@ title: "Power analysis"
 author: "James Galante"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -10,6 +13,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ### Save Image for Debugging
+
 ```{r}
 # Saving image for debugging
 save.image("RDA_objects/visualize_power_results.rda")
@@ -18,19 +22,23 @@ message("Saved Image")
 ```
 
 ### Goal
-Exploration of power simulation results from the `r snakemake@wildcards$sample` dataset.
+
+Exploration of power simulation results from the
+`r snakemake@wildcards$sample` dataset.
 
 ```{r requiredPackages, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(cowplot)
 ```
 
-***
+------------------------------------------------------------------------
 
 ### Power across effect sizes
-The statistical power to detect different effect sizes was computed by simulating UMI count data
-and injecting the specified effect sizes (% decrease in expression). Here, the statistical power 
-and the number of E-G pairs is at 80% power plotted for effect sizes.
+
+The statistical power to detect different effect sizes was computed by
+simulating UMI count data and injecting the specified effect sizes (%
+decrease in expression). Here, the statistical power and the number of
+E-G pairs is at 80% power plotted for effect sizes.
 
 ```{r, message = FALSE}
 # load results
@@ -73,15 +81,19 @@ p2 <- ggplot(power_80, aes(x = effect_size, fill = "darkblue")) +
 plot_grid(p2, p1, ncol = 2, rel_widths = c(0.33, 0.66))
 ```
 
-***
+------------------------------------------------------------------------
 
 ### Power vs. gene expression and number of perturbed cells
-Power is plotted as a function of gene expression levels and number of perturbed cells per
-perturbation. For this, genes are binned into decentiles based on their average expression
-(UMI or TPM/cell). For each bin, the average UMI or TPM/cell per gene is then calculated and used as the
-expression level for genes in this bin. Similarly, the perturbations are grouped into quartiles
-based on the number of cells per perturbation. The average statistical power per expression bin is
-then plotted as a function of detected UMIs for each cells per perturbation quartile.
+
+Power is plotted as a function of gene expression levels and number of
+perturbed cells per perturbation. For this, genes are binned into
+decentiles based on their average expression (UMI or TPM/cell). For each
+bin, the average UMI or TPM/cell per gene is then calculated and used as
+the expression level for genes in this bin. Similarly, the perturbations
+are grouped into quartiles based on the number of cells per
+perturbation. The average statistical power per expression bin is then
+plotted as a function of detected UMIs for each cells per perturbation
+quartile.
 
 ```{r}
 # Load in files and params
@@ -98,6 +110,14 @@ if (!is.null(tpm_per_gene_path)) {
   # Ensure gene_format is either "symbol" or "ensembl"
   if (!(gene_format %in% c("symbol", "ensembl"))) {
     stop("gene_format must be either 'symbol' or 'ensembl'.")
+  }
+  
+  # Ensure that the genes in the matrix are in the indicated gene_format of the tpm matrix
+  genes_in_exp <- unique(power$response_id)
+  if (!all(genes_in_exp %in% tpm_per_gene[[gene_format]])) {
+    missing_genes <- genes_in_exp[!genes_in_exp %in% tpm_per_gene[[gene_format]]]
+    cat("The following genes are missing in the TPM matrix:\n")
+    print(missing_genes)
   }
   
   # Merge the TPM values into the power table based on the gene_format column and response_id column
@@ -160,7 +180,6 @@ p <- ggplot(binned_power, aes(x = mean_expr, y = mean_power, color = cells_quant
 print(p)
 ```
 
-
 ### Minimum number of UMIs for 80% power per number of pert cells
 
 ```{r, fig.height=4, fig.width=8}
@@ -204,7 +223,6 @@ p_umi_sim <- ggplot(umi_80, aes(x = mean_pert_cells, y = min_umi)) +
 
 plot_grid(p_umi_mean, p_umi_sim, ncol = 2, rel_widths = c(0.5, 0.5))
 ```
-
 
 ### Percent of Pairs that Pass 80% at each Number of Perturbed Cells
 
@@ -290,7 +308,6 @@ p_sim <- ggplot(pct_pairs_sim, aes(x = mean_pert_cells, y = percent_0_power)) +
 plot_grid(p_bin, p_sim, ncol = 2, rel_widths = c(0.5, 0.5))
 ```
 
-
 ### Minimum number of cells to get 80% power by Mean UMIs
 
 ```{r}
@@ -316,11 +333,3 @@ p_umi <- ggplot(umi_80, aes(x = average_expression_all_cells, y = min_pert_cells
 
 print(p_umi)
 ```
-
-
-
-
-
-
-
-
