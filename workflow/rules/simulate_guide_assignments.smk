@@ -10,7 +10,8 @@ rule simulate_guide_assignments:
     simulated_sce = "results/{sample}/simulated_sce.rds"
   params:
     num_cells_per_pert = config["simulate_guide_assignments"]["num_cells_per_pert"],
-    num_guides_per_pert = config["simulate_guide_assignments"]["num_guides_per_pert"]
+    num_guides_per_pert = config["simulate_guide_assignments"]["num_guides_per_pert"],
+    num_cells = config["simulate_guide_assignments"]["num_cells"]
   log:
     "results/{sample}/logs/simulate_guide_assignment.log"
   conda:

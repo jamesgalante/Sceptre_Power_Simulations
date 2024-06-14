@@ -37,12 +37,16 @@ response_matrix <- readRDS(snakemake@input$raw_counts)
 message("Loading parameters")
 num_cells_per_pert <- snakemake@params$num_cells_per_pert
 num_guides_per_pert <- snakemake@params$num_guides_per_pert
+num_cells <- snakemake@params$num_cells
 
 ### SIMULATE GUIDE COUNTS ====================================================
 
 message("Creating the sce object")
 # Estimate how many cells we need in our sce object
-num_cells <- num_cells_per_pert[length(num_cells_per_pert)] * 5 + 6000 # The 6000 is to make sure there are enough n_ctrl cells
+if (is.null(num_cells)) {
+  num_cells <- num_cells_per_pert[length(num_cells_per_pert)] * 5 + 6000 # The 6000 is to make sure there are enough n_ctrl cells but this calculation is arbitrary otherwise
+  message(paste("Estimated number of cells:", num_cells))
+}
 
 # Create the raw matrix with the new number of cells
 counts <- matrix(0, nrow=nrow(response_matrix), ncol=num_cells)
