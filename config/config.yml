@@ -4,9 +4,9 @@ samples:
     interim: 1
 
 simulate_guide_assignments:
-  num_cells_per_pert: [50, 75, 100, 150, 250, 500, 750, 1000, 1400, 1800, 2500, 4000, 7500, 10000]
+  num_cells_per_pert: [50, 75, 100, 150, 250, 500, 750, 1000, 1400, 1800, 2500, 4000, 7500, 10000] # For accurate multiple hypothesis correction, the length of this vector multiplied by the number of genes in your raw counts matrix is the number of samples that will be tested
   num_guides_per_pert: 15
-  num_cells: 56000 # Leave NULL for approximate calculation in script - input number of expected cells for accurate correction with multiple hypothesis testing
+  num_cells: 56000 # Leave NULL for approximate calculation in script
   
 fit_dispersions:
   size_factors: "poscounts"
