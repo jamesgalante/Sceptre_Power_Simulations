@@ -167,6 +167,7 @@ p <- ggplot(binned_power, aes(x = mean_expr, y = mean_power, color = cells_quant
   geom_line() +
   geom_point() +
   labs(title = "Power vs. gene expression", 
+       subtitle = paste0("Number of Tests: ", nrow(power)),
        x = paste0("Average ",expression_quantifier, "/cell per gene"),
        y = "Power", 
        color = "Combination") +
