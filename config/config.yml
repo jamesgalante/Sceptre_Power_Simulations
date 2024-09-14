@@ -23,6 +23,7 @@ sceptre_power_analysis:
 
 compute_power_from_simulations:
   pval_adj_thresh: 0.1
+  positive_proportion: 0.05 # Leave NULL if don't want to insert NULL p values in FDR correction
   
 # Let `tpm_per_gene: NULL`, if you want UMIs instead of TPM
 # gene_format must be "ensembl" or "symbol"

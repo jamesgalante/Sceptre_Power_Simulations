@@ -90,7 +90,8 @@ rule compute_power_from_simulations:
     power_analysis_results = "results/{sample}/power_analysis_results.tsv"
   params:
     pval_adj_thresh = config["compute_power_from_simulations"]["pval_adj_thresh"],
-    effect_size = config["sceptre_power_analysis"]["effect_size"]
+    effect_size = config["sceptre_power_analysis"]["effect_size"],
+    positive_proportion = config["compute_power_from_simulations"]["positive_proportion"]
   log: "results/{sample}/logs/compute_power_from_simulations.log"
   conda:
     "../envs/sceptre_power_simulations.yml"
