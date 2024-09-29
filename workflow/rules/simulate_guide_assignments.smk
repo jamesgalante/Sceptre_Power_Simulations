@@ -10,8 +10,6 @@ rule simulate_guide_assignments:
     simulated_sce = "results/{sample}/simulated_sce.rds"
   params:
     num_cells_per_pert = config["simulate_guide_assignments"]["num_cells_per_pert"],
-    num_guides_per_pert = config["simulate_guide_assignments"]["num_guides_per_pert"],
-    num_cells = config["simulate_guide_assignments"]["num_cells"]
   log:
     "results/{sample}/logs/simulate_guide_assignment.log"
   conda:
@@ -29,10 +27,6 @@ rule fit_dispersions:
     simulated_sce = "results/{sample}/simulated_sce.rds"
   output:
     simulated_sce_disp = "results/{sample}/simulated_sce_disp.rds"
-  params:
-    size_factors = config["fit_dispersions"]["size_factors"],
-    fit_type = config["fit_dispersions"]["fit_type"],
-    disp_type = config["fit_dispersions"]["disp_type"]
   log:
     "results/{sample}/logs/fit_dispersions.log"
   conda:

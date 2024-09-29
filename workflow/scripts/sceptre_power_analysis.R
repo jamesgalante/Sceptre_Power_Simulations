@@ -41,7 +41,7 @@ response_matrix <- readRDS(snakemake@input$raw_counts)
 # Load params
 effect_size <- 1 - as.numeric(snakemake@params$effect_size)
 reps <- snakemake@params$reps
-guide_sd <- snakemake@params$guide_sd
+guide_sd <- 0.13
 
 
 ### PRECOMPUTATIONS TO RUN SIMULATIONS ======================================

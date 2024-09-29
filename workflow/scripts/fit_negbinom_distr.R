@@ -21,6 +21,7 @@ suppressPackageStartupMessages({
 # load prepared input data stored in SingleCellExperiment object
 message("Loading input data.")
 response_matrix <- readRDS(snakemake@input$raw_counts)
+colnames(response_matrix) <- NULL
 simulated_sce <- readRDS(snakemake@input$simulated_sce)
 
 # Calculate total_umis and detected_genes for Deseq2 object creation
@@ -34,9 +35,9 @@ message("Estimate dispersion using DESeq2:")
 sce <- fit_negbinom_deseq2(response_matrix,
                            simulated_sce,
                            coldata,
-                           size_factors = snakemake@params$size_factors,
-                           fit_type = snakemake@params$fit_type,
-                           disp_type = snakemake@params$disp_type)
+                           size_factors = "poscounts",
+                           fit_type = "parametric",
+                           disp_type = "dispersion")
 
 
 # save output sce to file

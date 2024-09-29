@@ -7,10 +7,10 @@ rule split_target_response_pairs:
     simulated_sce_disp = "results/{sample}/simulated_sce_disp.rds"
   output:
     discovery_pairs = "resources/{sample}/discovery_pairs.txt",
-    splits = expand("resources/{{sample}}/pair_splits/discovery_pairs_split_{split}.txt",split=range(1,config['split_target_response_pairs']['batches'] + 1)),
+    splits = expand("resources/{{sample}}/pair_splits/discovery_pairs_split_{split}.txt", split=range(1, min(len(config['simulate_guide_assignments']['num_cells_per_pert']), 100) + 1)),
     grna_target_data_frame = "resources/{sample}/grna_target_data_frame.txt"
   params:
-    batches = config["split_target_response_pairs"]['batches']
+    batches = min(len(config["simulate_guide_assignments"]['num_cells_per_pert']), 100)
   log: "results/{sample}/logs/split_target_response_pairs.log"
   conda:
     "../envs/sceptre_power_simulations.yml"
@@ -22,7 +22,7 @@ rule split_target_response_pairs:
     
     
 # Let's simulate counts and create a proxy sceptre object that can be passed into each power simulation
-# We do this, so we only have to change the covariates when the response_matrix is simulated in each rep
+# We do this so we only have to change the covariates when the response_matrix is simulated in each rep
 rule create_simulated_sceptre_object:
   input:
     simulated_sce_disp = "results/{sample}/simulated_sce_disp.rds",
@@ -54,8 +54,7 @@ rule sceptre_power_analysis:
     "results/{sample}/power_analysis_split/power_analysis_output_{split}.tsv"
   params:
     effect_size = config["sceptre_power_analysis"]["effect_size"],
-    reps = config["sceptre_power_analysis"]["reps"],
-    guide_sd = config["sceptre_power_analysis"]["guide_sd"]
+    reps = config["sceptre_power_analysis"]["reps"]
   log: "results/{sample}/logs/sceptre_power_analysis_{split}.log"
   conda:
     "../envs/sceptre_power_simulations.yml"
@@ -69,7 +68,7 @@ rule sceptre_power_analysis:
 # Combine the split outputs of the power analysis
 rule combine_sceptre_power_analysis:
  input:
-   expand("results/{{sample}}/power_analysis_split/power_analysis_output_{split}.tsv", split=range(1, config["split_target_response_pairs"]["batches"] + 1))
+   splits = expand("results/{{sample}}/power_analysis_split/power_analysis_output_{split}.tsv", split=range(1, min(len(config['simulate_guide_assignments']['num_cells_per_pert']), 100) + 1)),
  output:
    "results/{sample}/power_analysis_output.tsv"
  log: "results/{sample}/logs/combine_sceptre_power_analysis.log"
