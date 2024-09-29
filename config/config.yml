@@ -1,32 +1,18 @@
-# Main Config File Format for Sceptre Power Simulations Pipeline
+# Main Config File Format for Sceptre-based Power Simulations Pipeline
 samples:
-  test_data:
-    interim: 1
+  test_data
 
 simulate_guide_assignments:
-  num_cells_per_pert: [50, 75, 100, 150, 250, 500, 750, 1000, 1400, 1800, 2500, 4000, 7500, 10000] # For accurate multiple hypothesis correction, the length of this vector multiplied by the number of genes in your raw counts matrix is the number of samples that will be tested
-  num_guides_per_pert: 15
-  num_cells: 56000 # Leave NULL for approximate calculation in script
-  
-fit_dispersions:
-  size_factors: "poscounts"
-  fit_type: "parametric"
-  disp_type: "dispersion"
-  
-split_target_response_pairs:
-  batches: 14 # should be <= len(num_cells_per_pert)
+  num_cells_per_pert: [50, 75, 100, 150, 250, 500, 750, 1000, 1400, 1800, 2500, 4000, 7500, 10000] 
   
 sceptre_power_analysis:
   effect_size: 0.15
   reps: 20
-  guide_sd: 0.13
 
 compute_power_from_simulations:
   pval_adj_thresh: 0.1
-  positive_proportion: 0.05 # Leave NULL if don't want to insert NULL p values in FDR correction
+  positive_proportion: 0.05
   
-# Let `tpm_per_gene: NULL`, if you want UMIs instead of TPM
-# gene_format must be "ensembl" or "symbol"
 visualize_power_results:
-  tpm_per_gene: "resources/tpm_per_gene.tsv" 
+  tpm_per_gene: NULL
   gene_format: "ensembl"
