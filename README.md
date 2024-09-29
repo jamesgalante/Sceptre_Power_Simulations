@@ -142,6 +142,8 @@ The pipeline simulates gene expression data to assess the statistical power of d
 
 - **Understanding FDR Correction**: The Benjamini-Hochberg procedure assumes a certain proportion of true positives. The `positive_proportion` parameter allows you to adjust this assumption based on your experimental context.
 
+- **TO DO**: Use dispersion estimates calculated by Sceptre
+
 ## References
 
 - **Sceptre Package Documentation**: [Hands-On Single-Cell CRISPR Screen Analysis](https://github.com/sceptre-project/sceptre)
