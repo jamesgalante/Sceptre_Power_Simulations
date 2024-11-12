@@ -146,6 +146,6 @@ The pipeline simulates gene expression data to assess the statistical power of d
 
 ## References
 
-- **Sceptre Package Documentation**: [Hands-On Single-Cell CRISPR Screen Analysis](https://github.com/sceptre-project/sceptre)
+- **Sceptre Package Documentation**: [Hands-On Single-Cell CRISPR Screen Analysis](https://timothy-barry.github.io/sceptre-book/)
 
 ---
