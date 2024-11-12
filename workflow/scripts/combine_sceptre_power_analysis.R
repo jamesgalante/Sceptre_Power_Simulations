@@ -31,7 +31,7 @@ data_list <- list()
 
 # Loop over input files
 message("Gathering inputs")
-for (file_path in snakemake@input) {
+for (file_path in snakemake@input$splits) {
   # Read the current file
   current_data <- read_tsv(file_path, col_types = cols())
   

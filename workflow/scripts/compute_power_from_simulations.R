@@ -36,7 +36,7 @@ if (is.null(snakemake@params$positive_proportion)) {
     summarize(
       mean_log2_fold_change = mean(log_2_fold_change, na.rm = TRUE),  # Calculate mean ignoring NAs
       mean_pert_cells = mean(num_pert_cells, na.rm = TRUE),  # Calculate mean perturbed cells, ignoring NAs
-      power = mean(pval_adj < snakemake@params$pval_adj_thresh & (replace_na(log_2_fold_change, 1) < 0), na.rm = TRUE),
+      power = mean(pval_adj < snakemake@params$pval_adj_thresh),
       .groups = "drop"
     ) %>%
     arrange(desc(power))
@@ -88,7 +88,7 @@ if (is.null(snakemake@params$positive_proportion)) {
     summarize(
       mean_log2_fold_change = mean(log_2_fold_change, na.rm = TRUE),  # Calculate mean ignoring NAs
       mean_pert_cells = mean(num_pert_cells, na.rm = TRUE),  # Calculate mean perturbed cells, ignoring NAs
-      power = mean(pval_adj < snakemake@params$pval_adj_thresh & (replace_na(log_2_fold_change, 1) < 0), na.rm = TRUE),
+      power = mean(pval_adj < snakemake@params$pval_adj_thresh),
       .groups = "drop"
     )
   

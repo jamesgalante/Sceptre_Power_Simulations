@@ -23,20 +23,12 @@ Simulating Counts
 Simulating tapseq counts
 Warning messages:
 1: In obtain_pointer_vector(i = dt$j, dim = n_cells) :
-  subscript out of bounds (index 8680873 >= vector size 8680873)
+  subscript out of bounds (index 8676576 >= vector size 8676576)
 2: In obtain_pointer_vector(i = dt$j, dim = n_cells) :
-  subscript out of bounds (index 29990 >= vector size 29990)
+  subscript out of bounds (index 30162 >= vector size 30162)
 3: In obtain_pointer_vector(i = dt$j, dim = n_cells) :
-  subscript out of bounds (index 29990 >= vector size 29990)
-4: In obtain_pointer_vector(i = dt$j, dim = n_cells) :
-  subscript out of bounds (index 29990 >= vector size 29990)
-5: In obtain_pointer_vector(i = dt$j, dim = n_cells) :
-  subscript out of bounds (index 29990 >= vector size 29990)
-6: In obtain_pointer_vector(i = dt$j, dim = n_cells) :
-  subscript out of bounds (index 29990 >= vector size 29990)
-7: In obtain_pointer_vector(i = dt$j, dim = n_cells) :
-  subscript out of bounds (index 29990 >= vector size 29990)
-8: In obtain_pointer_vector(i = dt$i, dim = n_responses) :
-  subscript out of bounds (index 29990 >= vector size 29990)
+  subscript out of bounds (index 30162 >= vector size 30162)
+4: In obtain_pointer_vector(i = dt$i, dim = n_responses) :
+  subscript out of bounds (index 30162 >= vector size 30162)
 Saving output to file.
 Closing log file connection
