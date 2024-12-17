@@ -81,7 +81,7 @@ sceptre_object@covariate_data_frame$grna_n_umis <- sceptre_object@covariate_data
 
 # We have to set the formulat to not include grna_n_nonzero
 # grna_n_nonzero and grna_n_umis are not linearly independent, so they can't both be used as covariates
-formula <- formula(~ log(response_n_nonzero) + log(response_n_umis) + log(grna_n_umis))
+formula <- formula(~ log(response_n_nonzero) + log(response_n_umis))
 
 
 ### OTHER SCEPTRE PARAMETERS ===============================================
